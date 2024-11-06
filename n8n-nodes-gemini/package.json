@@ -1,5 +1,5 @@
 {
-  "name": "n8n-nodes-iastudio",
+  "name": "n8n-nodes-aistudio",
   "version": "1.0.9",
   "description": "N8N nodes for Gemini API",
   "main": "dist/nodes/geminiIAStudio.node.js",
