@@ -13,7 +13,7 @@ export class GeminiApi implements ICredentialType {
             type: 'string',
             default: '',
             required: true,
-            description: 'Chave da API do Gemini. Veja como obter: [link](https://cloud.google.com/generative-language/docs/getting-started).',
+            description: 'Chave da API do Gemini. Veja como obter: https://cloud.google.com/generative-language/docs/getting-started',
         },
     ];
 } 

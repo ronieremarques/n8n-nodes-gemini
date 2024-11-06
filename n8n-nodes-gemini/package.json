@@ -1,8 +1,8 @@
 {
-  "name": "n8n-nodes-gemini",
-  "version": "1.0.8",
+  "name": "n8n-nodes-iastudio",
+  "version": "1.0.9",
   "description": "N8N nodes for Gemini API",
-  "main": "dist/nodes/GeminiIAStudio.node.js",
+  "main": "dist/nodes/geminiIAStudio.node.js",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
@@ -10,7 +10,7 @@
     "lint": "eslint src --ext .ts",
     "test": "jest",
     "prepare": "npm run build && npm run copy && npm run lint",
-    "copy": "copyfiles -u 1 src/nodes/gemini.svg dist"
+    "copy": "copyfiles -u 1 src/nodes/8links.svg dist"
   },
   "keywords": [
     "n8n",
@@ -33,7 +33,7 @@
       "dist/credentials/GeminiApi.credentials.js"
     ],
     "nodes": [
-      "dist/nodes/GeminiIAStudio.node.js"
+      "dist/nodes/geminiIAStudio.node.js"
     ]
   },
   "devDependencies": {

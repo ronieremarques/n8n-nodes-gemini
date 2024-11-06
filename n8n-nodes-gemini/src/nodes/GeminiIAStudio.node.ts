@@ -9,9 +9,9 @@ import axios from 'axios';
 
 export class GeminiIAStudio implements INodeType {
     description: INodeTypeDescription = {
-        displayName: 'Gemini IA Studio',
+        displayName: 'Gemini IA Studio [8links]',
         name: 'geminiIAStudio',
-        icon: 'file:gemini.svg',
+        icon: 'file:8links.svg',
         group: ['transform'],
         version: 1,
         description: 'Gera conteúdo usando a API do Gemini',
@@ -29,11 +29,77 @@ export class GeminiIAStudio implements INodeType {
         ],
         properties: [
             {
-                displayName: 'Título',
-                name: 'title',
+                displayName: 'Prompt',
+                name: 'prompt',
                 type: 'string',
                 default: '',
                 required: true,
+            },
+            {
+                displayName: 'Top-P',
+                name: 'topP',
+                type: 'number',
+                default: 0.95,
+                required: false,
+            },
+            {
+                displayName: 'Top-K',
+                name: 'topK',
+                type: 'number',
+                default: 40,
+                required: false,
+            },
+            {
+                displayName: 'Temperatura',
+                name: 'temperature',
+                type: 'number',
+                default: 1,
+                required: false,
+            },
+            {
+                displayName: 'Tamanho Máximo da Saída',
+                name: 'maxOutputTokens',
+                type: 'number',
+                default: 8192,
+                required: false,
+            },
+            {
+                displayName: 'Formato de Saída',
+                name: 'responseMimeType',
+                type: 'options',
+                options: [
+                    {
+                        name: 'application/json',
+                        value: 'application/json',
+                    },
+                    {
+                        name: 'text/plain',
+                        value: 'text/plain',
+                    },
+                ],
+                default: 'text/plain',
+                required: false,
+            },
+            {
+                displayName: 'Modelo',
+                name: 'model',
+                type: 'options',
+                options: [
+                    {
+                        name: 'Gemini 1.5 Flash',
+                        value: 'gemini-1.5-flash',
+                    },
+                    {
+                        name: 'Gemini 1.5 Pro',
+                        value: 'gemini-1.5-pro',
+                    },
+                    {
+                        name: 'Gemini 1.0 Pro',
+                        value: 'gemini-1.0-pro',
+                    },
+                ],
+                default: 'gemini-1.5-flash',
+                required: false,
             },
         ],
     };
@@ -43,47 +109,54 @@ export class GeminiIAStudio implements INodeType {
         const returnData: INodeExecutionData[] = [];
 
         for (let i = 0; i < items.length; i++) {
-            const title = this.getNodeParameter('title', i) as string;
+            const prompt = this.getNodeParameter('prompt', i) as string;
             const credentials = await this.getCredentials('geminiApi');
             const geminiApiKey = credentials.apiKey;
 
-            // Chamada à API do Gemini para gerar conteúdo
-            const geminiResponse = await axios.post(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`,
-                {
-                    contents: [
-                        {
-                            role: 'user',
-                            parts: [
-                                {
-                                    text: title,
-                                },
-                            ],
+            try {
+                // Chamada à API do Gemini para gerar conteúdo
+                const geminiResponse = await axios.post(
+                    `https://generativelanguage.googleapis.com/v1beta/models/${this.getNodeParameter('model', i)}:generateContent?key=${geminiApiKey}`,
+                    {
+                        contents: [
+                            {
+                                role: 'user',
+                                parts: [
+                                    {
+                                        text: prompt,
+                                    },
+                                ],
+                            },
+                        ],
+                        generationConfig: {
+                            temperature: this.getNodeParameter('temperature', i) as number,
+                            topK: this.getNodeParameter('topK', i) as number,
+                            topP: this.getNodeParameter('topP', i) as number,
+                            maxOutputTokens: this.getNodeParameter('maxOutputTokens', i) as number,
+                            responseMimeType: this.getNodeParameter('responseMimeType', i) as string,
                         },
-                    ],
-                    generationConfig: {
-                        temperature: 1,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 8192,
-                        responseMimeType: 'text/plain',
                     },
-                },
-                {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                }
-            );
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
 
-            const content = geminiResponse.data;
+                const content = geminiResponse.data;
 
-            returnData.push({
-                json: {
-                    title,
-                    content,
-                } as IDataObject,
-            });
+                returnData.push({
+                    json: {
+                        prompt,
+                        content,
+                    } as IDataObject,
+                });
+            } catch (error) {
+                // Tratamento de erro
+                const status = (error as any).response?.status;
+                const message = (error as any).response?.data?.error?.message || 'Erro desconhecido';
+                throw new Error(`Erro ao chamar a API do Gemini: ${status} - ${message}`);
+            }
         }
 
         return [returnData];
